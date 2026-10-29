@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>CaissePro</title>
+    <style>
+      * { box-sizing: border-box; margin: 0; }
+      body {
+        font-family: Segoe UI, Tahoma, sans-serif;
+        background: linear-gradient(145deg, #0f172a, #115e59);
+        color: #fff;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .card {
+        text-align: center;
+        padding: 2rem 2.5rem;
+      }
+      .logo {
+        width: 72px;
+        height: 72px;
+        margin: 0 auto 1rem;
+        border-radius: 18px;
+        box-shadow: 0 12px 40px rgb(0 0 0 / 0.35);
+      }
+      h1 { font-size: 1.35rem; letter-spacing: -0.02em; }
+      p { margin-top: 0.5rem; font-size: 0.85rem; color: #94a3b8; }
+      .bar {
+        margin: 1.25rem auto 0;
+        width: 160px;
+        height: 4px;
+        border-radius: 999px;
+        background: rgb(255 255 255 / 0.15);
+        overflow: hidden;
+      }
+      .bar span {
+        display: block;
+        height: 100%;
+        width: 40%;
+        border-radius: inherit;
+        background: #2dd4bf;
+        animation: slide 1.1s ease-in-out infinite;
+      }
+      @keyframes slide {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(350%); }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <img class="logo" src="./caissepro-icon.svg" alt="" />
+      <h1>CaissePro</h1>
+      <p>Chargement…</p>
+      <div class="bar"><span></span></div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 128" fill="none" role="img" aria-label="CaissePro">
+  <defs>
+    <linearGradient id="cp-logo-bg" x1="8" y1="8" x2="120" y2="120" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#2dd4bf"/>
+      <stop offset="0.5" stop-color="#0d9488"/>
+      <stop offset="1" stop-color="#115e59"/>
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="28" fill="url(#cp-logo-bg)"/>
+  <rect x="34" y="36" width="60" height="44" rx="10" fill="#ecfdf5"/>
+  <rect x="42" y="44" width="44" height="10" rx="4" fill="#0f766e"/>
+  <path fill="#0f766e" d="M42 58h44v6c0 3.3-2.7 6-6 6H48c-3.3 0-6-2.7-6-6v-6z"/>
+  <rect x="48" y="72" width="32" height="4" rx="2" fill="#5eead4"/>
+  <rect x="48" y="80" width="26" height="4" rx="2" fill="#2dd4bf"/>
+  <circle cx="82" cy="76" r="10" fill="#f59e0b"/>
+  <circle cx="82" cy="76" r="6" fill="#fbbf24"/>
+  <text x="152" y="78" fill="#0f172a" font-family="Segoe UI, Cairo, system-ui, sans-serif" font-size="44" font-weight="700" letter-spacing="-0.5">Caisse</text>
+  <text x="152" y="112" fill="#0d9488" font-family="Segoe UI, Cairo, system-ui, sans-serif" font-size="44" font-weight="700" letter-spacing="-0.5">Pro</text>
+</svg>

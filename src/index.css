@@ -1,0 +1,135 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Cairo", "Segoe UI", system-ui, sans-serif;
+  --color-brand: #0d9488;
+  --color-brand-dark: #0f766e;
+  --color-ink: #0f172a;
+  --color-surface: #f8fafc;
+  --color-surface-elevated: #ffffff;
+  --shadow-card: 0 1px 2px rgb(15 23 42 / 0.04), 0 4px 16px rgb(15 23 42 / 0.04);
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+html[dir="rtl"],
+[dir="rtl"] {
+  font-family: "Cairo", "Segoe UI", Tahoma, sans-serif;
+  letter-spacing: 0;
+}
+
+input,
+select,
+textarea,
+button {
+  font: inherit;
+}
+
+::selection {
+  background: rgb(13 148 136 / 0.2);
+}
+
+.app-main {
+  flex: 1;
+  min-width: 0;
+  background:
+    radial-gradient(ellipse 120% 80% at 50% -20%, rgb(13 148 136 / 0.06), transparent 55%),
+    var(--color-surface);
+}
+
+.app-page {
+  max-width: 1680px;
+  margin-inline: auto;
+}
+
+.app-header {
+  box-shadow: 0 4px 24px rgb(15 23 42 / 0.06);
+}
+
+.amount-in {
+  color: #047857;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+.amount-out {
+  color: #b91c1c;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+.amount {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.card {
+  border-radius: 0.875rem;
+  border: 1px solid rgb(226 232 240 / 0.9);
+  background: var(--color-surface-elevated);
+  box-shadow: var(--shadow-card);
+}
+
+.table-shell {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.8125rem;
+}
+
+.table-shell thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: rgb(248 250 252);
+  border-bottom: 1px solid rgb(226 232 240);
+  padding: 0.625rem 0.75rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgb(100 116 139);
+  white-space: nowrap;
+}
+
+.table-shell tbody td {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid rgb(241 245 249);
+  vertical-align: middle;
+}
+
+.table-shell tbody tr:hover td {
+  background: rgb(248 250 252 / 0.85);
+}
+
+.table-shell tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.scroll-thin {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(203 213 225) transparent;
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: white;
+  }
+  .print-sheet {
+    box-shadow: none !important;
+    border: none !important;
+  }
+}
