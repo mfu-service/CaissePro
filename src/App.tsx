@@ -5,6 +5,7 @@ import { LoginPage } from './features/auth/LoginPage'
 import { AppShell } from './features/layout/AppShell'
 import { can } from './lib/permissions'
 import { AppLogo } from './shared/AppLogo'
+import { PrintPreviewHost } from './shared/PrintPreview'
 
 const DashboardPage = lazy(() => import('./features/dashboard/DashboardPage').then((m) => ({ default: m.DashboardPage })))
 const JournalPage = lazy(() => import('./features/journal/JournalPage').then((m) => ({ default: m.JournalPage })))
@@ -86,6 +87,7 @@ export default function App() {
       <HashRouter>
         <Gate />
       </HashRouter>
+      <PrintPreviewHost />
     </AppProvider>
   )
 }

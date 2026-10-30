@@ -200,6 +200,17 @@ const dict = {
   inactive: { fr: 'Inactif', ar: 'غير نشط' },
   editUser: { fr: 'Modifier l’utilisateur', ar: 'تعديل المستخدم' },
   userActiveAccount: { fr: 'Compte actif', ar: 'حساب نشط' },
+  printedOn: { fr: 'Imprimé le', ar: 'تاريخ الطباعة' },
+  period: { fr: 'Période', ar: 'الفترة' },
+  criteria: { fr: 'Critères de filtre', ar: 'معايير التصفية' },
+  allDates: { fr: 'Toutes les dates', ar: 'كل التواريخ' },
+  currencyNote: { fr: 'Montants en dinars algériens (DA)', ar: 'المبالغ بالدينار الجزائري (د.ج)' },
+  pdfPreview: { fr: 'Aperçu PDF', ar: 'معاينة PDF' },
+  savePdf: { fr: 'Enregistrer le PDF', ar: 'حفظ PDF' },
+  printNow: { fr: 'Imprimer', ar: 'طباعة' },
+  pdfPreparing: { fr: 'Préparation du PDF…', ar: 'جارٍ إعداد ملف PDF…' },
+  pdfFailed: { fr: 'Impossible de créer le PDF.', ar: 'تعذر إنشاء ملف PDF.' },
+  closePreview: { fr: 'Fermer', ar: 'إغلاق' },
 } as const
 
 export type I18nKey = keyof typeof dict

@@ -6,6 +6,7 @@ import { exportSynthesisExcel, monthlySynthesis } from '../../lib/export'
 import { chartValueMargin, chartValueXAxisProps, chartValueYAxisProps, horizontalBarMargin } from '../../lib/chartAxis'
 import { formatDzd, monthLabel } from '../../lib/format'
 import { t } from '../../lib/i18n'
+import { PrintReport, PrintSection, PrintTable, printAmount, printDocument } from '../../shared/PrintReport'
 import { Btn, Card, CardHeader, CompanyHeader, Money, PageHeader, StatCard, TableWrap, inputClass } from '../../shared/ui'
 
 type SynthRow = { nature: string; designation: string; month: string; entree: number; sortie: number }
@@ -105,6 +106,8 @@ export function ReportsPage() {
   const isRtl = lang === 'ar'
   const periodLabel = month ? monthLabel(month, lang) : `${t('allMonths', lang)} ${year}`
   const reportTitle = isAllYear ? `${t('synthesis', lang)} ${year}` : `${t('natureStatement', lang)} — ${periodLabel}`
+  const profile = getCompany()
+  const companyName = lang === 'ar' ? profile.name_ar || profile.name_fr : profile.name_fr || profile.name_ar
 
   const associes = all<{ detail2: string; s: number }>(
     `SELECT IFNULL(detail2, designation) detail2, SUM(sortie-entree) s
@@ -114,7 +117,8 @@ export function ReportsPage() {
   )
 
   return (
-    <div className="space-y-6">
+    <>
+    <div className="screen-only space-y-6">
       <PageHeader
         title={t('reports', lang)}
         actions={
@@ -132,15 +136,15 @@ export function ReportsPage() {
             <Btn variant="outline" size="sm" onClick={() => exportSynthesisExcel(year, month || undefined)}>
               {t('exportExcel', lang)}
             </Btn>
-            <Btn variant="outline" size="sm" onClick={() => window.print()}>
-              {t('print', lang)}
+            <Btn variant="outline" size="sm" onClick={() => printDocument(`${companyName} - ${reportTitle}`)}>
+              {t('pdfPreview', lang)}
             </Btn>
           </div>
         }
       />
 
-      <Card className="print-sheet">
-        <CompanyHeader company={getCompany()} lang={lang} subtitle={reportTitle} />
+      <Card>
+        <CompanyHeader company={profile} lang={lang} subtitle={reportTitle} />
       </Card>
 
       {!isAllYear && (
@@ -343,6 +347,186 @@ export function ReportsPage() {
         </TableWrap>
       </Card>
     </div>
+    <PrintReport
+      company={profile}
+      lang={lang}
+      title={reportTitle}
+      subtitle={periodLabel}
+      kicker={profile.fiscal_year ? `${t('fiscalYear', lang)} ${profile.fiscal_year}` : t('reports', lang)}
+      orientation={isAllYear ? 'landscape' : 'portrait'}
+      filters={[
+        { label: t('year', lang), value: year },
+        { label: t('filterMonth', lang), value: month ? monthLabel(month, lang) : t('allMonths', lang) },
+      ]}
+      kpis={[
+        { label: t('entree', lang), value: formatDzd(totals.entree), tone: 'in' },
+        { label: t('sortie', lang), value: formatDzd(totals.sortie), tone: 'out' },
+        { label: t('netBalance', lang), value: formatDzd(totals.net), tone: 'brand' },
+      ]}
+    >
+      {isAllYear ? (
+        <PrintSection title={t('synthesis', lang)}>
+          <PrintTable dense>
+            <thead>
+              <tr>
+                <th>{t('nature', lang)}</th>
+                {months.map((m) => (
+                  <th key={m} className="num">
+                    {monthLabel(m, lang)}
+                  </th>
+                ))}
+                <th className="num">{t('total', lang)}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {groups.map((g) => {
+                const gRows = rows.filter((r) => r.nature === g)
+                const byMonth = (m: string) =>
+                  gRows.filter((r) => r.month === m).reduce((s, r) => s + Number(r.sortie) - Number(r.entree), 0)
+                const tot = months.reduce((s, m) => s + byMonth(m), 0)
+                return (
+                  <tr key={g}>
+                    <td className="strong">{g}</td>
+                    {months.map((m) => (
+                      <td key={m}>{printAmount(byMonth(m))}</td>
+                    ))}
+                    <td>{printAmount(tot, 'auto', false)}</td>
+                  </tr>
+                )
+              })}
+              {!groups.length && (
+                <tr>
+                  <td colSpan={months.length + 2} className="print-empty">
+                    {t('noData', lang)}
+                  </td>
+                </tr>
+              )}
+            </tbody>
+            {groups.length > 0 && (
+              <tfoot>
+                <tr>
+                  <td>{t('total', lang)}</td>
+                  {months.map((m) => {
+                    const monthNet = rows
+                      .filter((r) => r.month === m)
+                      .reduce((s, r) => s + Number(r.sortie) - Number(r.entree), 0)
+                    return <td key={m}>{printAmount(monthNet, 'auto', false)}</td>
+                  })}
+                  <td>{printAmount(totals.net, 'auto', false)}</td>
+                </tr>
+              </tfoot>
+            )}
+          </PrintTable>
+        </PrintSection>
+      ) : null}
+
+      <PrintSection title={t('natureStatement', lang)}>
+        <PrintTable>
+          <thead>
+            <tr>
+              <th>{t('nature', lang)}</th>
+              <th className="num">{t('entree', lang)}</th>
+              <th className="num">{t('sortie', lang)}</th>
+              <th className="num">{t('netBalance', lang)}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {natureLines.map((n) => (
+              <tr key={n.nature}>
+                <td className="strong">{n.nature}</td>
+                <td>{printAmount(n.entree, 'in')}</td>
+                <td>{printAmount(n.sortie, 'out')}</td>
+                <td>{printAmount(n.net, 'auto', false)}</td>
+              </tr>
+            ))}
+            {!natureLines.length && (
+              <tr>
+                <td colSpan={4} className="print-empty">
+                  {t('noData', lang)}
+                </td>
+              </tr>
+            )}
+          </tbody>
+          {natureLines.length > 0 && (
+            <tfoot>
+              <tr>
+                <td>{t('total', lang)}</td>
+                <td>{printAmount(totals.entree, 'in', false)}</td>
+                <td>{printAmount(totals.sortie, 'out', false)}</td>
+                <td>{printAmount(totals.net, 'auto', false)}</td>
+              </tr>
+            </tfoot>
+          )}
+        </PrintTable>
+      </PrintSection>
+
+      <PrintSection title={t('byDesignation', lang)}>
+        <PrintTable>
+          <thead>
+            <tr>
+              <th>{t('nature', lang)}</th>
+              <th>{t('designation', lang)}</th>
+              <th className="num">{t('entree', lang)}</th>
+              <th className="num">{t('sortie', lang)}</th>
+              <th className="num">{t('netBalance', lang)}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {designationLines.map((d) => (
+              <tr key={`${d.nature}-${d.designation}`}>
+                <td>{d.nature}</td>
+                <td className="strong">{d.designation}</td>
+                <td>{printAmount(d.entree, 'in')}</td>
+                <td>{printAmount(d.sortie, 'out')}</td>
+                <td>{printAmount(d.net, 'auto', false)}</td>
+              </tr>
+            ))}
+            {!designationLines.length && (
+              <tr>
+                <td colSpan={5} className="print-empty">
+                  {t('noData', lang)}
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </PrintTable>
+      </PrintSection>
+
+      <PrintSection title={t('partnerLedger', lang)}>
+        <PrintTable>
+          <thead>
+            <tr>
+              <th>{t('partnerLedger', lang)}</th>
+              <th className="num">{t('netBalance', lang)}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {associes.map((a) => (
+              <tr key={a.detail2}>
+                <td className="strong">{a.detail2 || '—'}</td>
+                <td>{printAmount(Number(a.s), 'auto', false)}</td>
+              </tr>
+            ))}
+            {!associes.length && (
+              <tr>
+                <td colSpan={2} className="print-empty">
+                  {t('noData', lang)}
+                </td>
+              </tr>
+            )}
+          </tbody>
+          {associes.length > 0 && (
+            <tfoot>
+              <tr>
+                <td>{t('total', lang)}</td>
+                <td>{printAmount(associes.reduce((s, a) => s + Number(a.s), 0), 'auto', false)}</td>
+              </tr>
+            </tfoot>
+          )}
+        </PrintTable>
+      </PrintSection>
+    </PrintReport>
+    </>
   )
 }
 

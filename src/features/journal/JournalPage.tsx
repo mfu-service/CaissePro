@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 import { useApp } from '../../context/AppContext'
 import { cascadeOptions, natures } from '../../lib/cascade'
 import { addDesignation, addDetail, addNature } from '../../lib/categories'
-import { accountBalance, all, getSetting, isDayClosed } from '../../lib/db'
+import { accountBalance, all, getCompany, getSetting, isDayClosed } from '../../lib/db'
 import { exportJournalImportTemplate, exportMovementsExcel } from '../../lib/export'
 import { importJournalForAccount } from '../../lib/importExcel'
 import { formatDate, formatDzd, todayIso } from '../../lib/format'
@@ -13,6 +13,7 @@ import { deleteMovement, insertMovement, listMovements, updateMovement } from '.
 import { can } from '../../lib/permissions'
 import type { Account, Attachment, Movement } from '../../lib/types'
 import { ComboField } from '../../shared/ComboField'
+import { PrintReport, PrintSection, PrintTable, printAmount, printDocument } from '../../shared/PrintReport'
 import {
   Btn,
   Card,
@@ -73,6 +74,17 @@ export function JournalPage() {
   const cascade = cascadeOptions(form.nature, form.designation)
   const closed = isDayClosed(form.accountId, form.date)
   const allowNeg = getSetting('allow_negative', '1') === '1'
+  const profile = getCompany()
+  const accountName = acc ? (lang === 'ar' ? acc.name_ar : acc.name_fr) : '—'
+  const orgName = lang === 'ar' ? profile.name_ar || profile.name_fr : profile.name_fr || profile.name_ar
+  const periodValue =
+    from && to
+      ? `${formatDate(from, lang)} — ${formatDate(to, lang)}`
+      : from
+        ? `${t('from', lang)} ${formatDate(from, lang)}`
+        : to
+          ? `${t('to', lang)} ${formatDate(to, lang)}`
+          : t('allDates', lang)
   const displayRows = useMemo(() => [...rows].reverse(), [rows])
   const pageCount = Math.max(1, Math.ceil(displayRows.length / pageSize))
   const pageSafe = Math.min(page, pageCount - 1)
@@ -113,7 +125,8 @@ export function JournalPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <>
+    <div className="screen-only space-y-6">
       <PageHeader
         title={t('journal', lang)}
         description={acc ? (lang === 'ar' ? acc.name_ar : acc.name_fr) : undefined}
@@ -179,8 +192,12 @@ export function JournalPage() {
             <Btn variant="outline" size="sm" onClick={() => exportMovementsExcel(rows, acc?.code ?? 'caisse')}>
               {t('exportExcel', lang)}
             </Btn>
-            <Btn variant="outline" size="sm" onClick={() => window.print()}>
-              {t('print', lang)}
+            <Btn
+              variant="outline"
+              size="sm"
+              onClick={() => printDocument([orgName, t('journal', lang), accountName].filter(Boolean).join(' - '))}
+            >
+              {t('pdfPreview', lang)}
             </Btn>
             {can(user, 'journal') && (
               <Btn
@@ -484,6 +501,79 @@ export function JournalPage() {
         />
       )}
     </div>
+    <PrintReport
+      company={profile}
+      lang={lang}
+      title={t('journal', lang)}
+      subtitle={accountName}
+      kicker={profile.fiscal_year ? `${t('fiscalYear', lang)} ${profile.fiscal_year}` : t('journal', lang)}
+      orientation="landscape"
+      filters={[
+        { label: t('account', lang), value: accountName },
+        { label: t('period', lang), value: periodValue },
+        { label: t('nature', lang), value: nature || t('allNatures', lang) },
+        ...(q.trim() ? [{ label: t('search', lang), value: q.trim() }] : []),
+      ]}
+      kpis={[
+        { label: t('solde', lang), value: formatDzd(solde), tone: 'brand' },
+        { label: t('entree', lang), value: formatDzd(filteredIn), tone: 'in' },
+        { label: t('sortie', lang), value: formatDzd(filteredOut), tone: 'out' },
+        { label: t('total', lang), value: String(rows.length) },
+      ]}
+    >
+      <PrintSection title={`${t('journal', lang)} — ${periodValue}`}>
+        <PrintTable dense>
+          <thead>
+            <tr>
+              <th>{t('date', lang)}</th>
+              <th>{t('code', lang)}</th>
+              <th>{t('nature', lang)}</th>
+              <th>{t('designation', lang)}</th>
+              <th>{t('detail1', lang)}</th>
+              <th>{t('detail2', lang)}</th>
+              <th>{t('remarks', lang)}</th>
+              <th className="num">{t('entree', lang)}</th>
+              <th className="num">{t('sortie', lang)}</th>
+              <th className="num">{t('solde', lang)}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((r) => (
+              <tr key={r.id}>
+                <td className="print-nowrap">{formatDate(r.date, lang)}</td>
+                <td>{r.daily_code}</td>
+                <td>{r.nature}</td>
+                <td>{r.designation}</td>
+                <td>{r.detail1}</td>
+                <td>{r.detail2}</td>
+                <td>{r.remarks}</td>
+                <td>{printAmount(r.entree, 'in')}</td>
+                <td>{printAmount(r.sortie, 'out')}</td>
+                <td>{printAmount(r.solde, 'auto', false)}</td>
+              </tr>
+            ))}
+            {!rows.length && (
+              <tr>
+                <td colSpan={10} className="print-empty">
+                  {t('noData', lang)}
+                </td>
+              </tr>
+            )}
+          </tbody>
+          {rows.length > 0 && (
+            <tfoot>
+              <tr>
+                <td colSpan={7}>{t('total', lang)}</td>
+                <td>{printAmount(filteredIn, 'in', false)}</td>
+                <td>{printAmount(filteredOut, 'out', false)}</td>
+                <td />
+              </tr>
+            </tfoot>
+          )}
+        </PrintTable>
+      </PrintSection>
+    </PrintReport>
+    </>
   )
 }
 
